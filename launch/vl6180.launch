@@ -1,0 +1,8 @@
+<!-- Starts up everything needed to run the example listener/talker Python nodes. -->
+
+<launch>
+  <node pkg="vl6180_sim" type="vl6180.py" name="vl6180">
+    <param name="rate" value="2"/>
+  </node>
+
+</launch>
