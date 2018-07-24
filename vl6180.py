@@ -13,35 +13,34 @@ class VL6180:
         self.distance = 255
         self.res = 0.1
         self.angle = angle
-    def update(self, grid):
+    def update(self, grid, cx, cy):
         angle = self.angle
-        cx = len(grid)/2
-        cy = len(grid[0])/2
         if angle == "lf":
-            tiles = [(cx + 1, cy), (cx + 1, cy+1), (cx +2, cy+2)]
+            tiles = [(cx + 1, cy+1), (cx + 1, cy+2), (cx +2, cy+2)]
         if angle == "lr":
-            tiles = [(cx + 1, cy), (cx + 1, cy-1), (cx +2, cy-2)]
+            tiles = [(cx + 1, cy-1), (cx + 1, cy-2), (cx +2, cy-2)]
         if angle == "rf":
-            tiles = [(cx - 1, cy), (cx - 1, cy+1), (cx -2, cy+2)]
+            tiles = [(cx - 1, cy+1), (cx - 1, cy+2), (cx -2, cy+2)]
         if angle == "rr":
-            tiles = [(cx - 1, cy), (cx - 1, cy-1), (cx -2, cy-2)]
+            tiles = [(cx - 1, cy-1), (cx - 1, cy-2), (cx -2, cy-2)]
         if angle == "fl":
-            tiles = [(cx, cy+1), (cx+1, cy+1), (cx +2, cy+2)]
+            tiles = [(cx+1, cy+1), (cx+2, cy+1), (cx +2, cy+2)]
         if angle == "fr":
-            tiles = [(cx, cy+1), (cx-1, cy+1), (cx -2, cy+2)]
-        if angle == "rl":
-            tiles = [(cx, cy-1), (cx+1, cy-1), (cx +2, cy-2)]
-        if angle == "rr":
-            tiles = [(cx, cy-1), (cx-1, cy-1), (cx -2, cy-2)]
+            tiles = [(cx-1, cy+1), (cx-2, cy+1), (cx -2, cy+2)]
+        if angle == "r_l":
+            tiles = [(cx+1, cy-1), (cx+2, cy-1), (cx +2, cy-2)]
+        if angle == "r_r":
+            tiles = [(cx-1, cy-1), (cx-2, cy-1), (cx -2, cy-2)]
         for i in range(0,3):
-            if grid[tiles[i][0], tiles[i][1]] > 90:
+            if grid[tiles[i][0], tiles[i][1]] > 95:
                 self.distance = 50 + 100*i
                 self.interrupt()
+                print(tiles[i])
                 return
         self.distance = 255
     def interrupt(self):
-        print("detected obstacle. Stopping platform..")
-        rospy.Publisher("/platform/e_stop", Int16, queue_size=1).publish(Int16(1))
+        print("VL at "+ str(self.angle) +" detected obstacle. Stopping platform..")
+        e_stop.publish(Int16(1))
     def setGridRes(self, res):
         self.res = res
 
@@ -49,12 +48,12 @@ class VL6180:
 vl_array = [
     VL6180("lf"),
     VL6180("lr"),
-    VL6180("rl"),
+    VL6180("rf"),
     VL6180("rr"),
     VL6180("fl"),
     VL6180("fr"),
-    VL6180("rl"),
-    VL6180("rr")
+    VL6180("r_l"),
+    VL6180("r_r")
     ]
 
 def callbackTimer(event):
@@ -64,9 +63,14 @@ def callbackCM(costmap):
     global cmap
     cmap = costmap
     m = grid2matrix(costmap)
+    center_x = cmap.info.width/2 -1 
+    center_y = cmap.info.height/2 -1
     for vl in vl_array:
-        vl.update(m)
+        vl.update(m, center_x, center_y)
 def callbackUpdate(costmap_u):
+    if cmap is None:
+        print("waiting for initial costmap")
+        return
     if costmap_u.x != 0 or costmap_u.y != 0:
         print("cannot handle costmap update")
         return
@@ -87,7 +91,10 @@ def grid2matrix(occupancy_grid):
             matrix[x].append(mval)
     return np.array(matrix)
 
+global cmap
+cmap=None
 rospy.init_node('vl6180')
+e_stop = rospy.Publisher("/platform/e_stop", Int16, queue_size=1, tcp_nodelay=True)
 rospy.Subscriber("/move_base/local_costmap/costmap", OccupancyGrid, callbackCM, queue_size=5)
 rospy.Subscriber("/move_base/local_costmap/costmap_updates", OccupancyGridUpdate, callbackUpdate, queue_size=5)
 rospy.Timer(rospy.Duration(0.5), callbackTimer)
