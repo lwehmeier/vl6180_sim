@@ -16,21 +16,21 @@ class VL6180:
     def update(self, grid, cx, cy):
         angle = self.angle
         if angle == "lf":
-            tiles = [(cx + 1, cy+1), (cx + 1, cy+2), (cx +2, cy+2)]
+            tiles = [(cx + 1, cy+1), (cx + 1, cy+2)]#, (cx +2, cy+2)]
         if angle == "lr":
-            tiles = [(cx + 1, cy-1), (cx + 1, cy-2), (cx +2, cy-2)]
+            tiles = [(cx + 1, cy-1), (cx + 1, cy-2)]#, (cx +2, cy-2)]
         if angle == "rf":
-            tiles = [(cx - 1, cy+1), (cx - 1, cy+2), (cx -2, cy+2)]
+            tiles = [(cx - 1, cy+1), (cx - 1, cy+2)]#, (cx -2, cy+2)]
         if angle == "rr":
-            tiles = [(cx - 1, cy-1), (cx - 1, cy-2), (cx -2, cy-2)]
+            tiles = [(cx - 1, cy-1), (cx - 1, cy-2)]#, (cx -2, cy-2)]
         if angle == "fl":
-            tiles = [(cx+1, cy+1), (cx+2, cy+1), (cx +2, cy+2)]
+            tiles = [(cx+1, cy+1), (cx+2, cy+1)]#, (cx +2, cy+2)]
         if angle == "fr":
-            tiles = [(cx-1, cy+1), (cx-2, cy+1), (cx -2, cy+2)]
+            tiles = [(cx-1, cy+1), (cx-2, cy+1)]#, (cx -2, cy+2)]
         if angle == "r_l":
-            tiles = [(cx+1, cy-1), (cx+2, cy-1), (cx +2, cy-2)]
+            tiles = [(cx+1, cy-1), (cx+2, cy-1)]#, (cx +2, cy-2)]
         if angle == "r_r":
-            tiles = [(cx-1, cy-1), (cx-2, cy-1), (cx -2, cy-2)]
+            tiles = [(cx-1, cy-1), (cx-2, cy-1)]#, (cx -2, cy-2)]
         for i in range(0,3):
             if grid[tiles[i][0], tiles[i][1]] > 95:
                 self.distance = 50 + 100*i
